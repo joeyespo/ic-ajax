@@ -81,7 +81,7 @@ exports.lookupFixture = lookupFixture;function makePromise(settings) {
       }
     }
     settings.success = makeSuccess(resolve);
-    settings.error = makeError(reject);
+    settings.error = makeError(settings, reject);
     Ember.$.ajax(settings);
   }, 'ic-ajax: ' + (settings.type || 'GET') + ' to ' + settings.url);
 };
@@ -114,13 +114,13 @@ function makeSuccess(resolve) {
   }
 }
 
-function makeError(reject) {
+function makeError(settings, reject) {
   return function(jqXHR, textStatus, errorThrown) {
-    Ember.run(null, reject, {
-      jqXHR: jqXHR,
-      textStatus: textStatus,
-      errorThrown: errorThrown
-    });
+    var err = new Error((settings.type || 'GET') + ' ' + settings.url + ' ' + jqXHR.status + ' (' + errorThrown + ')');
+    err.jqXHR = jqXHR;
+    err.textStatus = textStatus;
+    err.errorThrown = errorThrown;
+    Ember.run(null, reject, err);
   };
 }
 },{}]},{},[1])
